@@ -29,13 +29,37 @@ const ItemCtrl = (function () {
     },
     logData: function () {
       return data;
+    },
+    addItem: function (name, calories) {
+      // Create ID
+      let id;
+      if (data.items.length > 0) {
+        id = data.items[data.items.length - 1].id + 1;
+      } else {
+        id = 0;
+      }
+
+      // Calories to number
+      calories = parseInt(calories);
+
+      // Create new item
+      newItem = new Item(id, name, calories);
+
+      data.items.push(newItem);
+
+      return newItem;
     }
   }
 })();
 
 // UI Controller
 const UICtrl = (function () {
-  const UIitemList = document.getElementById("item-list");
+  const UIelements = {
+    itemList: document.getElementById("item-list"),
+    addBtn: document.querySelector(".add-btn"),
+    itemNameInput: document.getElementById("item-name"),
+    itemCaloriesInput: document.getElementById("item-calories"),
+  }
 
   // Public methods
   return {
@@ -53,13 +77,41 @@ const UICtrl = (function () {
         `;
       });
       // Insert list items
-      UIitemList.innerHTML = html;
+      UIelements.itemList.innerHTML = html;
+    },
+
+    getElement: function (elem) {
+      return UIelements[elem];
+    },
+
+    getItemInput: function () {
+      return {
+        name: UIelements.itemNameInput.value,
+        calories: UIelements.itemCaloriesInput.value,
+      }
     }
   }
 })();
 
 // App Controller
 const App = (function (ItemCtrl, UICtrl) {
+  // Load event listeners
+  const loadEventListeners = function () {
+    // Add item event
+    UICtrl.getElement("addBtn").addEventListener("click", itemAddSubmit);
+  }
+
+  // Add item submit
+  const itemAddSubmit = function (e) {
+    e.preventDefault();
+
+    // Get form input from UI Controller
+    const input = UICtrl.getItemInput();
+
+    if (input.name && input.calories) {
+      const newItem = ItemCtrl.addItem(input.name, input.calories);
+    }
+  }
 
   // Public methods
   return {
@@ -69,6 +121,9 @@ const App = (function (ItemCtrl, UICtrl) {
 
       // Populate UI list with items
       UICtrl.populateItemList(items);
+
+      // Load event listeners
+      loadEventListeners();
     }
   }
 })(ItemCtrl, UICtrl);
