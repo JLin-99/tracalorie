@@ -1,6 +1,27 @@
 // Using Module Pattern
 
 // Storage Controller
+const StorageCtrl = (function () {
+  let items = [];
+
+  // Public methods
+  return {
+    storeItem: function (item) {
+      this.getItemsFromStorage();
+      items.push(item);
+      localStorage.setItem("items", JSON.stringify(items));
+    },
+
+    getItemsFromStorage: function () {
+      let localStorageItems = localStorage.getItem("items")
+      if (localStorageItems) {
+        items = JSON.parse(localStorageItems);
+      }
+
+      return items;
+    }
+  }
+})();
 
 // Item Controller
 const ItemCtrl = (function () {
@@ -13,7 +34,7 @@ const ItemCtrl = (function () {
 
   // Data Structure / State
   const data = {
-    items: [],
+    items: StorageCtrl.getItemsFromStorage(),
     currentItem: null,
     totalCalories: 0,
   }
@@ -239,7 +260,7 @@ const UICtrl = (function () {
 })();
 
 // App Controller
-const App = (function (ItemCtrl, UICtrl) {
+const App = (function (ItemCtrl, StorageCtrl, UICtrl) {
   // Load event listeners
   const loadEventListeners = function () {
     // Add item event
@@ -270,6 +291,9 @@ const App = (function (ItemCtrl, UICtrl) {
       const newItem = ItemCtrl.addItem(input.name, input.calories);
       // Add item to UI list
       UICtrl.addListItem(newItem);
+      // Store in localStorage
+      StorageCtrl.storeItem(newItem);
+
       // Clear input fields
       UICtrl.clearInput();
 
@@ -334,6 +358,6 @@ const App = (function (ItemCtrl, UICtrl) {
       loadEventListeners();
     }
   }
-})(ItemCtrl, UICtrl);
+})(ItemCtrl, StorageCtrl, UICtrl);
 
 App.init();
